@@ -1,3 +1,4 @@
+<p>
 Install the package by running the command<br>
 	pip3 install pyffmpeg<br>
 <br>
@@ -94,3 +95,4 @@ video:3556kB audio:353kB subtitle:0kB other streams:0kB global headers:0kB muxin
 [libx264 @ 0x7fe6d2907080] ref B L1: 96.8%  3.2%<br>
 [libx264 @ 0x7fe6d2907080] kb/s:1004.35<br>
  Updated the Video : ../input/Spark_Course_Intro.mp4 with logo : ../input/RADE.png! New vedio : ../output/Spark_Course_Intro.mp4<br>
+</p>
