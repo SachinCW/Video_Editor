@@ -1,28 +1,7 @@
 import os
 import subprocess
 import time
-
-import logging
-import logging.handlers
-
 import re
-
-##################################################
-### Function to define and enable Logging
-##################################################
-def enable_logging(logFile,logLevel):
-   logsize = 100*1000000
-   logger = logging.getLogger("")
-   logger.setLevel(logLevel)
-   logging.basicConfig(filename=logFile, 
-        style="{",  
-        format=f"{asctime} - {levelname} - {module}:{funcName} - {message} ", 
-        datefmt="%d-%m-%Y %H:%M:%S", 
-        filemode="a")
-
-   ## Setting logFile rotation on reaching its defined size of 100 MB
-   handler=logging.handlers.RotatingFileHandler(logFile, mode='a',maxBytes=logsize, backupCount=20)
-
 
 ##################################################
 ### Function to convert time into Seconds
@@ -41,6 +20,40 @@ def format_time(seconds):
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+
+
+##################################################
+### Function to add water mark to Video
+##################################################
+def add_watermark(video_file):
+    # Overlay position (top-left)
+    x = "10"
+    y = "10"
+
+    # Font and watermark text
+    logo_file = "../input/overlays/logo.png"
+    font_file = "../input/Lobster.ttf"
+    watermark_text = "Sachin Chandrashekhar"
+
+    # Always use software encoding (libx264)
+    video_encoder = "-c:v libx264"
+
+    out_filename = video_file.split('.')
+    print(out_filename,len(out_filename))
+    video_file_name = '..' + out_filename[-2] + "_watermark" + "." + out_filename[-1]
+
+    ffmpeg_command = (
+            f"ffmpeg -y -i \"{video_file}\" -i \"{logo_file}\" "
+            f"-filter_complex \"[1:v]scale=150:-1[logo];[0:v][logo]overlay=x={x}:y={y},"
+            f"drawtext=fontfile='{font_file}':text='{watermark_text}':"
+            f"fontcolor=white@1.0:fontsize=30:x=w-tw-10:y=h-th-10\" "
+            f"{video_encoder} -pix_fmt yuv420p -c:a copy \"{video_file_name}\""
+        )
+    print(f"Add Watermark : Running Command:",ffmpeg_command)
+    os.system(ffmpeg_command)
+
+    #print(f"Running Command:", " ".join(command))  # Debugging statement to verify the command
+    #subprocess.run(command, check=True)
 
 
 ##################################################
@@ -65,27 +78,9 @@ def extract_video(input_path, output_path, start_time, duration):
         output_path
     ]
     
-    logging.info("Running Command :".join(command))  # Debugging statement to verify the command
-    print(f"Running Command:", " ".join(command))  # Debugging statement to verify the command
+    print(f"Trim Video : Running Command:", " ".join(command))  # Debugging statement to verify the command
     subprocess.run(command, check=True)
 
-
-
-def find_first_video_file(directory):
-    """Find the first video file in the directory."""
-    for file in os.listdir(directory):
-        if file.endswith(('.mp4', '.avi', '.mov', '.mkv')):  # Add more extensions if needed
-            return os.path.join(directory, file)
-    return None
-
-
-def print_dictionary(dict):
-    for key,value in dict.items():
-        if isinstance(value,dict):
-            print(f"Key:", key)
-            print_dictionary(value)
-        else:
-            print(f"****",key,value)
 
 
 ##################################################
@@ -166,34 +161,12 @@ print(extraction_dict)
 for key in extraction_dict:
     #print(f" {key}-> {extraction_dict[key]}")
     extract_video(input_video_file,extraction_dict[key]['output_file'],extraction_dict[key]['start_time'],extraction_dict[key]['duration'])
-    time.sleep(10)
+    add_watermark(extraction_dict[key]['output_file'])
     
-#    # Get the current working directory
-#    video_directory = os.getcwd()
-#
-#    # Find the first video file in the current directory
-#    input_video = find_first_video_file(video_directory)
-#
-#    if input_video:
-#        # Create an 'output' directory if it doesn't exist
-#        output_directory = os.path.join(video_directory, "output")
-#        os.makedirs(output_directory, exist_ok=True)
-#
-#        # Define the output path for the trimmed video
-#        output_video = os.path.join(output_directory, f"{output_name_input}.mp4")
-#
-#        # Call the trim_video function
-#        trim_video(input_video, output_video, start_time_input, duration)
-#
-#        print(f"Video trimmed successfully and saved as {output_video}")
-#        print(f"Original video preserved: {input_video}")
-#
-#    else:
-#        print("No video file found in the directory.")
-#
-#    # End timing and print the time taken
-#    end_time_process = time.time()
-#    time_taken = end_time_process - start_time_process
-#
-#    formatted_time = format_time(time_taken)
-#    print(f"Time taken for the process: {formatted_time}")
+    # End timing and print the time taken
+    end_time_process = time.time()
+    time_taken = end_time_process - start_time_process
+
+    formatted_time = format_time(time_taken)
+    print(f"Time taken for the process: {formatted_time}")
+    time.sleep(2)
