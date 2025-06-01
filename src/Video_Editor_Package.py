@@ -25,7 +25,7 @@ def format_time(seconds):
 ##################################################
 ### Function to add water mark to Video
 ##################################################
-def add_watermark(video_file):
+def add_watermark(output_dir,video_file):
     # Overlay position (top-left)
     x = "10"
     y = "10"
@@ -39,8 +39,10 @@ def add_watermark(video_file):
     video_encoder = "-c:v libx264"
 
     out_filename = video_file.split('.')
-    print(out_filename,len(out_filename))
-    video_file_name = '..' + out_filename[-2] + "_watermark" + "." + out_filename[-1]
+    ext = out_filename[-1]
+    out_filename = out_filename[-2].split('/')
+    video_file_name = output_dir + "/"  + out_filename[-1] + "_watermark" + "." + ext
+    print(f"--- Video file :", video_file_name)
 
     ffmpeg_command = (
             f"ffmpeg -y -i \"{video_file}\" -i \"{logo_file}\" "
@@ -67,7 +69,7 @@ def extract_video(input_path, output_path, start_time, duration):
     """
     command = [
         'ffmpeg',
-        '-async', '-1',
+        #'-async', '-2',        ## To Sync audio lagging with video, Issue is limited to extraction from 2nd video only
         '-ss', start_time,     # Fast seek before loading input
         '-i', input_path,      # Input file
         '-t', duration,        # Duration of the clip
@@ -155,18 +157,21 @@ if __name__ == "__main__":
             else:
                 print(f" Error! InValid end time..")
 
-#print_dictionary(extraction_dict)
-print(extraction_dict)
+    #print_dictionary(extraction_dict)
+    #print(extraction_dict)
 
-for key in extraction_dict:
-    #print(f" {key}-> {extraction_dict[key]}")
-    extract_video(input_video_file,extraction_dict[key]['output_file'],extraction_dict[key]['start_time'],extraction_dict[key]['duration'])
-    add_watermark(extraction_dict[key]['output_file'])
+    if( len(extraction_dict) > 0) :
+        for key in extraction_dict:
+            #print(f" {key}-> {extraction_dict[key]}")
+            extract_video(input_video_file,extraction_dict[key]['output_file'],extraction_dict[key]['start_time'],extraction_dict[key]['duration'])
+            add_watermark(output_dir,extraction_dict[key]['output_file'])
     
-    # End timing and print the time taken
-    end_time_process = time.time()
-    time_taken = end_time_process - start_time_process
+            # End timing and print the time taken
+            end_time_process = time.time()
+            time_taken = end_time_process - start_time_process
 
-    formatted_time = format_time(time_taken)
-    print(f"Time taken for the process: {formatted_time}")
-    time.sleep(2)
+            formatted_time = format_time(time_taken)
+            print(f"Time taken for the process: {formatted_time}")
+            time.sleep(2)
+    else:
+        add_watermark(output_dir,input_video_file)
