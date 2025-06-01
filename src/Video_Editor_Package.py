@@ -199,6 +199,8 @@ def combine_thumbnail_watermark_videos(thumbnail_video,watermark_video,output_di
     ffmpeg_final_video = f"ffmpeg -i \"concat:{ts1}|{ts2}\" -c copy \"{ffmpeg_final_video_file}\""
     print("Processing command 3: ", ffmpeg_final_video)
     os.system(ffmpeg_final_video)
+    os.remove(ts1)
+    os.remove(ts2)
 
 
 
@@ -302,6 +304,9 @@ if __name__ == "__main__":
             watermark_video =  output_dir + "/" + thumbnail_dir.split('.')[-2] + "_watermark.mp4"
             combine_thumbnail_watermark_videos(thumbnail_video, watermark_video,output_dir,thumbnail_dir.split('.')[-2])
 
+            os.remove(thumbnail_image_file)
+            os.remove(thumbnail_video)
+            os.remove(watermark_video)
 
             # End timing and print the time taken
             end_time_process = time.time()
@@ -320,3 +325,6 @@ if __name__ == "__main__":
         watermark_video =  output_dir + "/" + thumbnail_dir.split('.')[-2] + "_watermark.mp4"
             
         combine_thumbnail_watermark_videos(thumbnail_video, watermark_video,output_dir,thumbnail_dir.split('.')[-2])
+        os.remove(thumbnail_image_file)
+        os.remove(thumbnail_video)
+        os.remove(watermark_video)
